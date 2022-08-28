@@ -10,8 +10,17 @@ import org.junit.Assert.*
  * See [testing documentation](http://d.android.com/tools/testing).
  */
 class ExampleUnitTest {
+
+
     @Test
-    fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
+    fun checkFirstExample(){
+        val result=CalculatorUtils.calculateExpression("25-2*10")
+        assert(result=="5.0")
+    }
+
+    @Test
+    fun checkSeconExample(){
+        val result=CalculatorUtils.calculateExpression("10/2-20")
+        assert(result=="-15.0")
     }
 }

@@ -1,4 +1,4 @@
-package com.example.calculator
+package com.example.calculator.ui
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
@@ -6,15 +6,14 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
+import com.example.calculator.R
 import com.example.calculator.databinding.ActivityMainBinding
 import com.example.calculator.models.HistoryModel
-import com.google.firebase.auth.FirebaseAuth
+import com.example.calculator.utils.CalculatorUtils
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import java.util.*
-import javax.script.ScriptEngineManager
 
 class MainActivity : AppCompatActivity() {
 
@@ -27,7 +26,9 @@ class MainActivity : AppCompatActivity() {
         FirebaseFirestore.getInstance()
     }
 
-    private val maxOperatorStack=Stack<>
+
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,21 +76,38 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.subTract.setOnClickListener {
+
             changeExpression("-")
         }
         binding.multiply.setOnClickListener {
             changeExpression("*")
         }
         binding.divide.setOnClickListener {
+
             changeExpression("/")
         }
         binding.equalTo.setOnClickListener {
-            calculateExpression()
+            val result= CalculatorUtils.calculateExpression(binding.expressionText.text.toString())
+            if(result.isNotEmpty()){
+                expression=result
+                binding.resultText.text=result
+                saveHistory()
+
+            }
+            else{
+                binding.resultText.text="No Result"
+            }
+        }
+        binding.point.setOnClickListener {
+            changeExpression(".")
         }
 
         binding.clearBtn.setOnClickListener {
-            binding.resultText.text=""
-            binding.expressionText.text=""
+            binding.resultText.text = ""
+            binding.expressionText.text = ""
+            expression=""
+            CalculatorUtils.clearAll()
+
         }
     }
 
@@ -116,19 +134,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun calculateExpression() {
-        var result: Double? = null
-        val engine = ScriptEngineManager().getEngineByName("rhino")
-        try {
-            result = engine.eval(expression) as Double
-        } catch (e: Exception) {
 
-        }
-        if (result != null) {
-            binding.resultText.text = result.toString()
-            saveHistory()
-        }
-    }
 
     private fun saveHistory() {
         val timeStamp = System.currentTimeMillis()
@@ -148,9 +154,9 @@ class MainActivity : AppCompatActivity() {
                 db.collection("history").document(auth.currentUser!!.uid)
                     .update("history", arrayList).addOnSuccessListener {
 
-                }.addOnFailureListener {
-                    Toast.makeText(this, "${it.message}", Toast.LENGTH_SHORT).show()
-                }
+                    }.addOnFailureListener {
+                        Toast.makeText(this, "${it.message}", Toast.LENGTH_SHORT).show()
+                    }
             } else {
                 val map = hashMapOf<String, Any>(
                     "history" to arrayList
@@ -160,8 +166,8 @@ class MainActivity : AppCompatActivity() {
                     .addOnSuccessListener {
 
                     }.addOnFailureListener {
-                    Toast.makeText(this, "${it.message}", Toast.LENGTH_SHORT).show()
-                }
+                        Toast.makeText(this, "${it.message}", Toast.LENGTH_SHORT).show()
+                    }
             }
         }
     }
